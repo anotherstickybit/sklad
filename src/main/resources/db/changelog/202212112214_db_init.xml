@@ -1,0 +1,227 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    
+    <changeSet id="sklad-1" author="mzsadykov">
+        <sql>
+            create schema if not exists sklad;
+        </sql>
+    </changeSet>
+    
+    <changeSet id="sklad-2" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="warehouse" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="warehouse" schemaName="sklad" remarks="Склады">
+            <column name="id" type="serial" remarks="Идентификатор записи">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar" remarks="Наименование">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="sklad-3" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="product" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="product" schemaName="sklad" remarks="Товары">
+            <column name="id" type="serial" remarks="Идентификатор записи">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="vendor_code" type="integer" remarks="Артикул">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar" remarks="Наименование товара">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_purchase_price" type="integer" remarks="Цена последней покупки"/>
+            <column name="last_sale_price" type="integer" remarks="Цена последней продажи"/>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-4" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="m2m_product_warehouse" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="m2m_product_warehouse" schemaName="sklad">
+            <column name="warehouse_id" type="serial" remarks="Идентификатор склада">
+                <constraints nullable="false" foreignKeyName="product_warehouse_warehouse_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="warehouse"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="product_id" type="serial" remarks="Идентификатор продукта">
+                <constraints nullable="false" foreignKeyName="product_warehouse_product_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="product"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="count" type="integer" remarks="Количество продуктов на складе">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-5" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="sale" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="sale" schemaName="sklad">
+            <column name="id" type="serial" remarks="Идентификатор записи">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="warehouse_id" type="serial" remarks="Идентификатор склада">
+                <constraints nullable="false" foreignKeyName="sale_warehouse_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="warehouse"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="date" type="timestamp" remarks="Дата совершения сделки">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-6" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="purchase" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="purchase" schemaName="sklad">
+            <column name="id" type="serial" remarks="Идентификатор записи">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="warehouse_id" type="serial" remarks="Идентификатор склада">
+                <constraints nullable="false" foreignKeyName="purchase_warehouse_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="warehouse"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="date" type="timestamp" remarks="Дата совершения сделки">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-7" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="moving" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="moving" schemaName="sklad">
+            <column name="id" type="serial" remarks="Идентификатор записи">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="warehouse_from_id" type="serial" remarks="Идентификатор склада отправителя">
+            <constraints nullable="false" foreignKeyName="purchase_warehouse_from_fk"
+                         referencedTableSchemaName="sklad" referencedTableName="warehouse"
+                         referencedColumnNames="id"/>
+            </column>
+            <column name="warehouse_to_id" type="serial" remarks="Идентификатор склада приемщика">
+                <constraints nullable="false" foreignKeyName="purchase_warehouse_to_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="warehouse"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="date" type="timestamp" remarks="Дата совершения сделки">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-8" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="o2m_sale_products" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="o2m_sale_products" schemaName="sklad">
+            <column name="sale_id" type="serial" remarks="Идентификатор продажи">
+                <constraints nullable="false" foreignKeyName="sale_products_sale_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="sale"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="product_id" type="serial" remarks="Идентификатор продукта">
+                <constraints nullable="false" foreignKeyName="sale_products_product_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="product"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="count" type="integer" remarks="Количество проданных продуктов">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_per_one" type="integer" remarks="Цена продажи за одну единицу">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-9" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="o2m_purchase_products" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="o2m_purchase_products" schemaName="sklad">
+            <column name="purchase_id" type="serial" remarks="Идентификатор закупки">
+                <constraints nullable="false" foreignKeyName="purchase_products_purchase_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="purchase"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="product_id" type="serial" remarks="Идентификатор продукта">
+                <constraints nullable="false" foreignKeyName="sale_products_product_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="product"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="count" type="integer" remarks="Количество закупленных продуктов">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_per_one" type="integer" remarks="Цена покупки за одну единицу">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="sklad-10" author="mzsadykov">
+        <preConditions>
+            <not>
+                <tableExists tableName="o2m_moving_products" schemaName="sklad"/>
+            </not>
+        </preConditions>
+        <createTable tableName="o2m_moving_products" schemaName="sklad">
+            <column name="moving_id" type="serial" remarks="Идентификатор перемщения">
+                <constraints nullable="false" foreignKeyName="moving_products_moving_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="moving"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="product_id" type="serial" remarks="Идентификатор продукта">
+                <constraints nullable="false" foreignKeyName="sale_products_product_fk"
+                             referencedTableSchemaName="sklad" referencedTableName="product"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="count" type="integer" remarks="Количество закупленных продуктов">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="sklad-11" author="mzsadykov">
+        <addPrimaryKey tableName="m2m_product_warehouse" schemaName="sklad"
+                       columnNames="warehouse_id, product_id"/>
+        <addPrimaryKey tableName="o2m_sale_products" schemaName="sklad"
+                       columnNames="sale_id, product_id"/>
+        <addPrimaryKey tableName="o2m_purchase_products" schemaName="sklad"
+                       columnNames="purchase_id, product_id"/>
+        <addPrimaryKey tableName="o2m_moving_products" schemaName="sklad"
+                       columnNames="moving_id, product_id"/>
+    </changeSet>
+    
+</databaseChangeLog>
